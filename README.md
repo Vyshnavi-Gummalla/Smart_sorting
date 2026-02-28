@@ -126,7 +126,7 @@ Fruit-Disease-Classification/
 ### 1️⃣ Clone Repository
 
 ```
-git clone https://github.com/your-username/your-repo-name.git
+git clone (https://github.com/Vyshnavi-Gummalla/Smart_sorting)
 ```
 
 ### 2️⃣ Install Dependencies
@@ -142,9 +142,10 @@ Open in Jupyter Notebook or upload to Google Colab:
 ```
 jupyter notebook
 ```
-
----
-
+## Download Model
+```
+https://drive.google.com/file/d/1aV9iZgFbmJ6-4gYL8Ek_EpX41Ozct_76/view?usp=drive_link
+```
 ## 🎯 Key Learning Outcomes
 
 * Understanding Transfer Learning
