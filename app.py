@@ -2,9 +2,20 @@ import streamlit as st
 import numpy as np
 from PIL import Image
 import tensorflow as tf
+import gdown
+import os
+
+# ----------------------------
+# Download model from Drive if not present
+# ----------------------------
+model_path = "healthy_vs_rotten.h5"
+
+if not os.path.exists(model_path):
+    url = "https://drive.google.com/uc?id=1aV9iZgFbmJ6-4gYL8Ek_EpX41Ozct_76"
+    gdown.download(url, model_path, quiet=False)
 
 # Load model
-model = tf.keras.models.load_model("healthy_vs_rotten.h5")
+model = tf.keras.models.load_model(model_path)
 
 # Class labels (same order as training)
 class_names = [
@@ -32,19 +43,10 @@ if uploaded_file is not None:
     image = Image.open(uploaded_file).convert("RGB")
     st.image(image, caption="Uploaded Image", use_column_width=True)
 
-    # Resize to match training size
     img = image.resize((224, 224))
-
-    # Convert to array
-    img_array = np.array(img)
-
-    # Normalize (IMPORTANT if used during training)
-    img_array = img_array / 255.0
-
-    # Add batch dimension
+    img_array = np.array(img) / 255.0
     img_array = np.expand_dims(img_array, axis=0)
 
-    # Predict
     prediction = model.predict(img_array)
     predicted_class = class_names[np.argmax(prediction)]
 
