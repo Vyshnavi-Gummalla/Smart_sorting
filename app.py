@@ -1,55 +1,51 @@
-from flask import Flask, render_template,request,jsonify,url_for,redirect
-from tensorflow.keras.preprocessing.image import load_img,img_to_array
-from PIL import Image
+import streamlit as st
 import numpy as np
-import os
+from PIL import Image
 import tensorflow as tf
 
-app = Flask(__name__)
-model = tf.keras.models.load_model('healthy_vs_rotten.h5')
+# Load model
+model = tf.keras.models.load_model("healthy_vs_rotten.h5")
 
-@app.route('/')
-def index():
-    return render_template("index.html")
+# Class labels (same order as training)
+class_names = [
+    'Apple_Healthy', 'Apple_Rotten',
+    'Banana_Healthy', 'Banana_Rotten',
+    'Bellpepper_Healthy', 'Bellpepper_Rotten',
+    'Carrot_Healthy', 'Carrot_Rotten',
+    'Cucumber_Healthy', 'Cucumber_Rotten',
+    'Grape_Healthy', 'Grape_Rotten',
+    'Guava_Healthy', 'Guava_Rotten',
+    'Jujube_Healthy', 'Jujube_Rotten',
+    'Mango_Healthy', 'Mango_Rotten',
+    'Orange_Healthy', 'Orange_Rotten',
+    'Pomegranate_Healthy', 'Pomegranate_Rotten',
+    'Potato_Healthy', 'Potato_Rotten',
+    'Strawberry_Healthy', 'Strawberry_Rotten',
+    'Tomato_Healthy', 'Tomato_Rotten'
+]
 
-@app.route('/predict', methods=['GET', 'POST'])
-def output():
-    if request.method == 'POST':
-        f = request.files['pc_image']
-        img_path = "static/uploads/" + f.filename
-        f.save(img_path)
+st.title("🍎 Smart Sorting - Fruit & Vegetable Freshness Detection")
 
-        img = load_img(img_path, target_size=(224, 224))
+uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
 
-        # Convert the image to array
-        image_array = np.array(img)
+if uploaded_file is not None:
+    image = Image.open(uploaded_file).convert("RGB")
+    st.image(image, caption="Uploaded Image", use_column_width=True)
 
-        # Add batch dimension
-        image_array = np.expand_dims(image_array, axis=0)
+    # Resize to match training size
+    img = image.resize((224, 224))
 
-        # Make prediction
-        pred = np.argmax(model.predict(image_array), axis=1)
+    # Convert to array
+    img_array = np.array(img)
 
-        index = [
-            'Apple_Healthy (0)', 'Apple_Rotten (1)', 'Banana_Healthy (2)', 'Banana_Rotten (3)',
-            'Bellpepper_Healthy (4)', 'Bellpepper_Rotten (5)',
-            'Carrot_Healthy (6)', 'Carrot_Rotten (7)',
-            'Cucumber_Healthy (8)', 'Cucumber_Rotten (9)',
-            'Grape_Healthy (10)', 'Grape_Rotten (11)',
-            'Guava_Healthy (12)', 'Guava_Rotten (13)',
-            'Jujube_Healthy (14)', 'Jujube_Rotten (15)',
-            'Mango_Healthy (16)', 'Mango_Rotten (17)',
-            'Orange_Healthy (18)', 'Orange_Rotten (19)',
-            'Pomegranate_Healthy (20)', 'Pomegranate_Rotten (21)',
-            'Potato_Healthy (22)', 'Potato_Rotten (23)',
-            'Strawberry_Healthy (24)', 'Strawberry_Rotten (25)',
-            'Tomato_Healthy (26)', 'Tomato_Rotten (27)'
-        ]
+    # Normalize (IMPORTANT if used during training)
+    img_array = img_array / 255.0
 
-        prediction = index[int(pred)]
-        print("prediction")
+    # Add batch dimension
+    img_array = np.expand_dims(img_array, axis=0)
 
-        return render_template("portfolio-details.html", predict=prediction)
-    
-if __name__ == '__main__':
-    app.run(debug=True, port=2222)
+    # Predict
+    prediction = model.predict(img_array)
+    predicted_class = class_names[np.argmax(prediction)]
+
+    st.success(f"Prediction: {predicted_class}")
